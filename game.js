@@ -53,10 +53,14 @@ const game = {
 const canvas = document.getElementById( 'gameCanvas' );
 const ctx = canvas.getContext( '2d' );
 
+function blockGridMarginX() {
+  const gridWidth = CONFIG.BLOCK_COLS * CONFIG.BLOCK_WIDTH + ( CONFIG.BLOCK_COLS - 1 ) * CONFIG.BLOCK_PADDING;
+  return ( CONFIG.CANVAS_WIDTH - gridWidth ) / 2;
+}
+
 function createBlocks() {
   const blocks = [];
-  const gridWidth = CONFIG.BLOCK_COLS * CONFIG.BLOCK_WIDTH + ( CONFIG.BLOCK_COLS - 1 ) * CONFIG.BLOCK_PADDING;
-  const marginX = ( CONFIG.CANVAS_WIDTH - gridWidth ) / 2;
+  const marginX = blockGridMarginX();
 
   for ( let row = 0; row < CONFIG.BLOCK_ROWS; row++ ) {
     for ( let col = 0; col < CONFIG.BLOCK_COLS; col++ ) {
@@ -66,11 +70,59 @@ function createBlocks() {
         width: CONFIG.BLOCK_WIDTH,
         height: CONFIG.BLOCK_HEIGHT,
         color: CONFIG.ROW_COLORS[ row ],
+        destructible: true,
         destroyed: false,
         exploding: false,
         explosionStartTime: null,
       } );
     }
+  }
+
+  return blocks;
+}
+
+function pickRandomColumns( count, totalCols ) {
+  const columns = [];
+  for ( let col = 0; col < totalCols; col++ ) columns.push( col );
+
+  for ( let i = columns.length - 1; i > 0; i-- ) {
+    const j = Math.floor( Math.random() * ( i + 1 ) );
+    [ columns[ i ], columns[ j ] ] = [ columns[ j ], columns[ i ] ];
+  }
+
+  return columns.slice( 0, count );
+}
+
+function createIndestructibleBlocks( level ) {
+  const blocks = [];
+  const count = CONFIG.INDESTRUCTIBLE_COUNTS[ level - 1 ];
+  const materials = CONFIG.LEVEL_MATERIALS[ level - 1 ];
+  if ( count === 0 ) return blocks;
+
+  const marginX = blockGridMarginX();
+  let remaining = count;
+  let rowIndex = 0;
+
+  while ( remaining > 0 ) {
+    const rowCount = Math.min( remaining, CONFIG.EXTRA_ROW_MAX_PER_ROW );
+    const columns = pickRandomColumns( rowCount, CONFIG.BLOCK_COLS );
+
+    for ( const col of columns ) {
+      blocks.push( {
+        x: marginX + col * ( CONFIG.BLOCK_WIDTH + CONFIG.BLOCK_PADDING ),
+        y: CONFIG.BLOCK_TOP_OFFSET + ( CONFIG.BLOCK_ROWS + rowIndex ) * ( CONFIG.BLOCK_HEIGHT + CONFIG.BLOCK_PADDING ),
+        width: CONFIG.BLOCK_WIDTH,
+        height: CONFIG.BLOCK_HEIGHT,
+        color: materials[ Math.floor( Math.random() * materials.length ) ],
+        destructible: false,
+        destroyed: false,
+        exploding: false,
+        explosionStartTime: null,
+      } );
+    }
+
+    remaining -= rowCount;
+    rowIndex++;
   }
 
   return blocks;
@@ -98,7 +150,7 @@ function createBall( paddle ) {
 function initGame() {
   game.score = 0;
   game.lives = CONFIG.LIVES_START;
-  game.blocks = createBlocks();
+  game.blocks = createBlocks().concat( createIndestructibleBlocks( game.level ) );
   game.paddle = createPaddle();
   game.ball = createBall( game.paddle );
 }
