@@ -224,6 +224,12 @@ function handleBlockCollision() {
   }
 }
 
+function checkWinCondition() {
+  if ( game.blocks.every( ( block ) => block.destroyed ) ) {
+    game.status = 'WON';
+  }
+}
+
 function drawStartScreen() {
   ctx.fillStyle = '#000';
   ctx.fillRect( 0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT );
@@ -238,16 +244,40 @@ function drawStartScreen() {
   ctx.fillText( 'Presiona una tecla o click para Iniciar', CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 + 30 );
 }
 
+function drawWonScreen() {
+  ctx.fillStyle = '#000';
+  ctx.fillRect( 0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT );
+
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center';
+
+  ctx.font = 'bold 40px sans-serif';
+  ctx.fillText( '¡Ganaste!', CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 - 20 );
+
+  ctx.font = '20px sans-serif';
+  ctx.fillText( 'Score final: ' + game.score, CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 + 20 );
+  ctx.fillText( 'Presiona una tecla o click para reiniciar', CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 + 50 );
+}
+
 function render() {
   if ( game.status === 'START' ) {
     drawStartScreen();
   } else if ( game.status === 'PLAYING' ) {
     drawPlayingScreen();
+  } else if ( game.status === 'WON' ) {
+    drawWonScreen();
   }
 }
 
 function startGame() {
   if ( game.status !== 'START' ) return;
+  initGame();
+  game.status = 'PLAYING';
+  render();
+}
+
+function resetGame() {
+  if ( game.status !== 'WON' && game.status !== 'GAME_OVER' ) return;
   initGame();
   game.status = 'PLAYING';
   render();
@@ -259,13 +289,17 @@ const PADDLE_KEYS = [ 'ArrowLeft', 'ArrowRight', 'a', 'A', 'd', 'D' ];
 window.addEventListener( 'keydown', ( e ) => {
   if ( PADDLE_KEYS.includes( e.key ) ) keys[ e.key ] = true;
   startGame();
+  resetGame();
 } );
 
 window.addEventListener( 'keyup', ( e ) => {
   if ( PADDLE_KEYS.includes( e.key ) ) keys[ e.key ] = false;
 } );
 
-canvas.addEventListener( 'click', startGame );
+canvas.addEventListener( 'click', () => {
+  startGame();
+  resetGame();
+} );
 
 canvas.addEventListener( 'mousemove', ( e ) => {
   if ( game.status !== 'PLAYING' ) return;
@@ -294,6 +328,9 @@ function gameLoop() {
     updateBall();
   }
   render();
+  if ( game.status === 'PLAYING' ) {
+    checkWinCondition();
+  }
   requestAnimationFrame( gameLoop );
 }
 
