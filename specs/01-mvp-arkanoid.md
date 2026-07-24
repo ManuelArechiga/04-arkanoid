@@ -1,6 +1,6 @@
 # Spec 01 — MVP Jugable de Arkanoid
 
-- **Estado:** Draft
+- **Estado:** Approved
 - **Dependencias:** Ninguna (primer spec del proyecto)
 - **Fecha:** 2026-07-24
 - **Objetivo:** Implementar un MVP jugable de Arkanoid de un solo nivel, con controles de teclado y mouse, 3 vidas, sistema de puntos y sonido, usando HTML/CSS/JS vanilla sin dependencias.
