@@ -152,12 +152,17 @@ function createBall( paddle ) {
   };
 }
 
-function initGame() {
-  game.score = 0;
-  game.lives = CONFIG.LIVES_START;
+function setupLevel() {
   game.blocks = createBlocks().concat( createIndestructibleBlocks( game.level ) );
   game.paddle = createPaddle();
   game.ball = createBall( game.paddle );
+}
+
+function initGame() {
+  game.score = 0;
+  game.level = 1;
+  game.lives = CONFIG.LIVES_START;
+  setupLevel();
 }
 
 function drawBlocks() {
@@ -309,8 +314,12 @@ function handleBlockCollision() {
 }
 
 function checkWinCondition() {
-  if ( game.blocks.every( ( block ) => block.destroyed ) ) {
-    game.status = 'WON';
+  const allDestructiblesDestroyed = game.blocks
+    .filter( ( block ) => block.destructible )
+    .every( ( block ) => block.destroyed );
+
+  if ( allDestructiblesDestroyed && game.level < CONFIG.MAX_LEVEL ) {
+    game.status = 'LEVEL_COMPLETE';
   }
 }
 
@@ -343,6 +352,21 @@ function drawWonScreen() {
   ctx.fillText( 'Presiona una tecla o click para reiniciar', CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 + 50 );
 }
 
+function drawLevelCompleteScreen() {
+  ctx.fillStyle = '#000';
+  ctx.fillRect( 0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT );
+
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center';
+
+  ctx.font = 'bold 40px sans-serif';
+  ctx.fillText( 'Nivel completado', CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 - 20 );
+
+  ctx.font = '20px sans-serif';
+  ctx.fillText( 'Score acumulado: ' + game.score, CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 + 20 );
+  ctx.fillText( 'Presiona una tecla o click para continuar', CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 + 50 );
+}
+
 function drawGameOverScreen() {
   ctx.fillStyle = '#000';
   ctx.fillRect( 0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT );
@@ -363,6 +387,8 @@ function render() {
     drawStartScreen();
   } else if ( game.status === 'PLAYING' ) {
     drawPlayingScreen();
+  } else if ( game.status === 'LEVEL_COMPLETE' ) {
+    drawLevelCompleteScreen();
   } else if ( game.status === 'WON' ) {
     drawWonScreen();
   } else if ( game.status === 'GAME_OVER' ) {
@@ -384,12 +410,22 @@ function resetGame() {
   render();
 }
 
+function startNextLevel() {
+  if ( game.status !== 'LEVEL_COMPLETE' ) return;
+  game.level++;
+  game.lives = CONFIG.LIVES_START;
+  setupLevel();
+  game.status = 'PLAYING';
+  render();
+}
+
 const keys = {};
 const PADDLE_KEYS = [ 'ArrowLeft', 'ArrowRight', 'a', 'A', 'd', 'D' ];
 
 window.addEventListener( 'keydown', ( e ) => {
   if ( PADDLE_KEYS.includes( e.key ) ) keys[ e.key ] = true;
   startGame();
+  startNextLevel();
   resetGame();
 } );
 
@@ -399,6 +435,7 @@ window.addEventListener( 'keyup', ( e ) => {
 
 canvas.addEventListener( 'click', () => {
   startGame();
+  startNextLevel();
   resetGame();
 } );
 
