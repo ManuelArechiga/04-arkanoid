@@ -30,6 +30,80 @@ const game = {
 const canvas = document.getElementById( 'gameCanvas' );
 const ctx = canvas.getContext( '2d' );
 
+function createBlocks() {
+  const blocks = [];
+  const gridWidth = CONFIG.BLOCK_COLS * CONFIG.BLOCK_WIDTH + ( CONFIG.BLOCK_COLS - 1 ) * CONFIG.BLOCK_PADDING;
+  const marginX = ( CONFIG.CANVAS_WIDTH - gridWidth ) / 2;
+
+  for ( let row = 0; row < CONFIG.BLOCK_ROWS; row++ ) {
+    for ( let col = 0; col < CONFIG.BLOCK_COLS; col++ ) {
+      blocks.push( {
+        x: marginX + col * ( CONFIG.BLOCK_WIDTH + CONFIG.BLOCK_PADDING ),
+        y: CONFIG.BLOCK_TOP_OFFSET + row * ( CONFIG.BLOCK_HEIGHT + CONFIG.BLOCK_PADDING ),
+        width: CONFIG.BLOCK_WIDTH,
+        height: CONFIG.BLOCK_HEIGHT,
+        color: CONFIG.ROW_COLORS[ row ],
+        destroyed: false,
+        exploding: false,
+        explosionStartTime: null,
+      } );
+    }
+  }
+
+  return blocks;
+}
+
+function createPaddle() {
+  return {
+    x: ( CONFIG.CANVAS_WIDTH - CONFIG.PADDLE_WIDTH ) / 2,
+    y: CONFIG.CANVAS_HEIGHT - CONFIG.PADDLE_Y_OFFSET - CONFIG.PADDLE_HEIGHT,
+    width: CONFIG.PADDLE_WIDTH,
+    height: CONFIG.PADDLE_HEIGHT,
+  };
+}
+
+function createBall( paddle ) {
+  return {
+    x: CONFIG.CANVAS_WIDTH / 2 - CONFIG.BALL_SIZE / 2,
+    y: paddle.y - CONFIG.BALL_SIZE,
+    size: CONFIG.BALL_SIZE,
+    dx: CONFIG.BALL_SPEED,
+    dy: -CONFIG.BALL_SPEED,
+  };
+}
+
+function initGame() {
+  game.score = 0;
+  game.lives = CONFIG.LIVES_START;
+  game.blocks = createBlocks();
+  game.paddle = createPaddle();
+  game.ball = createBall( game.paddle );
+}
+
+function drawBlocks() {
+  for ( const block of game.blocks ) {
+    if ( block.destroyed ) continue;
+    drawSprite( ctx, 'block_' + block.color, block.x, block.y, block.width, block.height );
+  }
+}
+
+function drawPaddle() {
+  drawSprite( ctx, 'paddle', game.paddle.x, game.paddle.y, game.paddle.width, game.paddle.height );
+}
+
+function drawBall() {
+  drawSprite( ctx, 'ball', game.ball.x, game.ball.y, game.ball.size, game.ball.size );
+}
+
+function drawPlayingScreen() {
+  ctx.fillStyle = '#000';
+  ctx.fillRect( 0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT );
+
+  drawBlocks();
+  drawPaddle();
+  drawBall();
+}
+
 function drawStartScreen() {
   ctx.fillStyle = '#000';
   ctx.fillRect( 0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT );
@@ -47,11 +121,14 @@ function drawStartScreen() {
 function render() {
   if ( game.status === 'START' ) {
     drawStartScreen();
+  } else if ( game.status === 'PLAYING' ) {
+    drawPlayingScreen();
   }
 }
 
 function startGame() {
   if ( game.status !== 'START' ) return;
+  initGame();
   game.status = 'PLAYING';
   render();
 }
