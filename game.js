@@ -133,9 +133,49 @@ function startGame() {
   render();
 }
 
-window.addEventListener( 'keydown', startGame );
+const keys = {};
+const PADDLE_KEYS = [ 'ArrowLeft', 'ArrowRight', 'a', 'A', 'd', 'D' ];
+
+window.addEventListener( 'keydown', ( e ) => {
+  if ( PADDLE_KEYS.includes( e.key ) ) keys[ e.key ] = true;
+  startGame();
+} );
+
+window.addEventListener( 'keyup', ( e ) => {
+  if ( PADDLE_KEYS.includes( e.key ) ) keys[ e.key ] = false;
+} );
+
 canvas.addEventListener( 'click', startGame );
 
-loadSpritesheet( () => {
+canvas.addEventListener( 'mousemove', ( e ) => {
+  if ( game.status !== 'PLAYING' ) return;
+  const rect = canvas.getBoundingClientRect();
+  const mouseX = ( e.clientX - rect.left ) * ( CONFIG.CANVAS_WIDTH / rect.width );
+  game.paddle.x = clamp( mouseX - game.paddle.width / 2, 0, CONFIG.CANVAS_WIDTH - game.paddle.width );
+} );
+
+function clamp( value, min, max ) {
+  return Math.max( min, Math.min( max, value ) );
+}
+
+function updatePaddle() {
+  if ( keys[ 'ArrowLeft' ] || keys[ 'a' ] || keys[ 'A' ] ) {
+    game.paddle.x -= CONFIG.PADDLE_SPEED;
+  }
+  if ( keys[ 'ArrowRight' ] || keys[ 'd' ] || keys[ 'D' ] ) {
+    game.paddle.x += CONFIG.PADDLE_SPEED;
+  }
+  game.paddle.x = clamp( game.paddle.x, 0, CONFIG.CANVAS_WIDTH - game.paddle.width );
+}
+
+function gameLoop() {
+  if ( game.status === 'PLAYING' ) {
+    updatePaddle();
+  }
   render();
+  requestAnimationFrame( gameLoop );
+}
+
+loadSpritesheet( () => {
+  requestAnimationFrame( gameLoop );
 } );
