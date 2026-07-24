@@ -6,7 +6,6 @@ const CONFIG = {
   PADDLE_Y_OFFSET: 30,     // distancia desde el borde inferior del canvas
   PADDLE_SPEED: 7,          // px por frame al mover con teclado
   BALL_SIZE: 16,
-  BALL_SPEED: 4,            // magnitud del vector de velocidad inicial
   BLOCK_ROWS: 6,
   BLOCK_COLS: 8,
   BLOCK_WIDTH: 52,
@@ -137,13 +136,19 @@ function createPaddle() {
   };
 }
 
+function ballSpeedForLevel( level ) {
+  const speed = CONFIG.BALL_SPEED_BASE + ( level - 1 ) * CONFIG.BALL_SPEED_INCREMENT;
+  return Math.min( speed, CONFIG.BALL_SPEED_MAX );
+}
+
 function createBall( paddle ) {
+  const speed = ballSpeedForLevel( game.level );
   return {
     x: CONFIG.CANVAS_WIDTH / 2 - CONFIG.BALL_SIZE / 2,
     y: paddle.y - CONFIG.BALL_SIZE,
     size: CONFIG.BALL_SIZE,
-    dx: CONFIG.BALL_SPEED,
-    dy: -CONFIG.BALL_SPEED,
+    dx: speed,
+    dy: -speed,
   };
 }
 
