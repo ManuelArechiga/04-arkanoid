@@ -16,10 +16,33 @@ const CONFIG = {
   LIVES_START: 3,
   POINTS_PER_BLOCK: 10,
   ROW_COLORS: ['red', 'yellow', 'green', 'cyan', 'magenta', 'hotpink'], // una por fila, de arriba hacia abajo
+
+  MAX_LEVEL: 10,
+  BALL_SPEED_BASE: 4,
+  BALL_SPEED_INCREMENT: 0.4,
+  BALL_SPEED_MAX: 7,               // tope, sujeto a ajuste tras prueba manual
+  EXTRA_ROW_MAX_PER_ROW: 7,        // máximo de indestructibles por fila extra (deja ≥1 columna libre)
+
+  INDESTRUCTIBLE_COUNTS: [ 0, 2, 4, 4, 7, 7, 10, 10, 12, 14 ], // índice 0 = nivel 1
+
+  // Materiales activos (utilizables) por nivel, según el patrón alterno confirmado
+  LEVEL_MATERIALS: [
+    [],                                             // nivel 1
+    [ 'wood' ],                                     // nivel 2 (solo el nuevo)
+    [ 'wood' ],                                     // nivel 3 (mezcla de lo introducido)
+    [ 'brick_red' ],                                // nivel 4 (solo el nuevo)
+    [ 'wood', 'brick_red' ],                        // nivel 5 (mezcla)
+    [ 'brick_purple' ],                             // nivel 6 (solo el nuevo)
+    [ 'wood', 'brick_red', 'brick_purple' ],        // nivel 7 (mezcla)
+    [ 'gray' ],                                      // nivel 8 (solo el nuevo)
+    [ 'wood', 'brick_red', 'brick_purple', 'gray' ], // nivel 9 (mezcla, los 4)
+    [ 'wood', 'brick_red', 'brick_purple', 'gray' ], // nivel 10 (mezcla, máxima dificultad)
+  ],
 };
 
 const game = {
-  status: 'START',   // 'START' | 'PLAYING' | 'WON' | 'GAME_OVER'
+  status: 'START',   // 'START' | 'PLAYING' | 'LEVEL_COMPLETE' | 'WON' | 'GAME_OVER'
+  level: 1,
   score: 0,
   lives: CONFIG.LIVES_START,
   blocks: [],          // array de Block, generado al iniciar/reiniciar
