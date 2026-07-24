@@ -259,6 +259,21 @@ function drawWonScreen() {
   ctx.fillText( 'Presiona una tecla o click para reiniciar', CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 + 50 );
 }
 
+function drawGameOverScreen() {
+  ctx.fillStyle = '#000';
+  ctx.fillRect( 0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT );
+
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center';
+
+  ctx.font = 'bold 40px sans-serif';
+  ctx.fillText( 'Game Over', CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 - 20 );
+
+  ctx.font = '20px sans-serif';
+  ctx.fillText( 'Score final: ' + game.score, CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 + 20 );
+  ctx.fillText( 'Presiona una tecla o click para reiniciar', CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 + 50 );
+}
+
 function render() {
   if ( game.status === 'START' ) {
     drawStartScreen();
@@ -266,6 +281,8 @@ function render() {
     drawPlayingScreen();
   } else if ( game.status === 'WON' ) {
     drawWonScreen();
+  } else if ( game.status === 'GAME_OVER' ) {
+    drawGameOverScreen();
   }
 }
 
