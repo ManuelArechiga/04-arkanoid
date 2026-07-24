@@ -83,6 +83,18 @@ function initGame() {
 function drawBlocks() {
   for ( const block of game.blocks ) {
     if ( block.destroyed ) continue;
+
+    if ( block.exploding ) {
+      const elapsed = Date.now() - block.explosionStartTime;
+      if ( elapsed > EXPLOSION_DURATION ) {
+        block.destroyed = true;
+        continue;
+      }
+      const frameIndex = Math.min( 3, Math.floor( elapsed / ( EXPLOSION_DURATION / 4 ) ) );
+      drawFrame( ctx, EXPLOSION_FRAMES[ block.color ][ frameIndex ], block.x, block.y, block.width, block.height );
+      continue;
+    }
+
     drawSprite( ctx, 'block_' + block.color, block.x, block.y, block.width, block.height );
   }
 }
@@ -95,6 +107,15 @@ function drawBall() {
   drawSprite( ctx, 'ball', game.ball.x, game.ball.y, game.ball.size, game.ball.size );
 }
 
+function drawHud() {
+  ctx.fillStyle = '#fff';
+  ctx.font = '16px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText( 'Score: ' + game.score, 10, 20 );
+  ctx.textAlign = 'right';
+  ctx.fillText( 'Vidas: ' + game.lives, CONFIG.CANVAS_WIDTH - 10, 20 );
+}
+
 function drawPlayingScreen() {
   ctx.fillStyle = '#000';
   ctx.fillRect( 0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT );
@@ -102,12 +123,18 @@ function drawPlayingScreen() {
   drawBlocks();
   drawPaddle();
   drawBall();
+  drawHud();
 }
 
 const ballBounceSound = new Audio( 'assets/sounds/ball-bounce.mp3' );
+const breakSound = new Audio( 'assets/sounds/break-sound.mp3' );
 
 function playBallBounceSound() {
   ballBounceSound.cloneNode().play();
+}
+
+function playBreakSound() {
+  breakSound.cloneNode().play();
 }
 
 function repositionBallAndPaddle() {
@@ -159,8 +186,41 @@ function updateBall() {
     playBallBounceSound();
   }
 
+  handleBlockCollision();
+
   if ( ball.y > CONFIG.CANVAS_HEIGHT ) {
     loseLife();
+  }
+}
+
+function handleBlockCollision() {
+  const ball = game.ball;
+
+  for ( const block of game.blocks ) {
+    if ( block.destroyed || block.exploding ) continue;
+
+    const hits = ball.x < block.x + block.width &&
+      ball.x + ball.size > block.x &&
+      ball.y < block.y + block.height &&
+      ball.y + ball.size > block.y;
+
+    if ( !hits ) continue;
+
+    const overlapX = Math.min( ball.x + ball.size, block.x + block.width ) - Math.max( ball.x, block.x );
+    const overlapY = Math.min( ball.y + ball.size, block.y + block.height ) - Math.max( ball.y, block.y );
+
+    if ( overlapX < overlapY ) {
+      ball.dx = -ball.dx;
+    } else {
+      ball.dy = -ball.dy;
+    }
+
+    block.exploding = true;
+    block.explosionStartTime = Date.now();
+    game.score += CONFIG.POINTS_PER_BLOCK;
+    playBreakSound();
+
+    break;
   }
 }
 
