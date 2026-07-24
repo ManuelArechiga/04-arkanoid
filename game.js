@@ -290,10 +290,14 @@ function handleBlockCollision() {
       ball.dy = -ball.dy;
     }
 
-    block.exploding = true;
-    block.explosionStartTime = Date.now();
-    game.score += CONFIG.POINTS_PER_BLOCK;
-    playBreakSound();
+    if ( block.destructible ) {
+      block.exploding = true;
+      block.explosionStartTime = Date.now();
+      game.score += CONFIG.POINTS_PER_BLOCK;
+      playBreakSound();
+    } else {
+      playBallBounceSound();
+    }
 
     break;
   }
