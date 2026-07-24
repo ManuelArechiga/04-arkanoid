@@ -1,6 +1,6 @@
 # Spec 01 — MVP Jugable de Arkanoid
 
-- **Estado:** Approved
+- **Estado:** Implemented
 - **Dependencias:** Ninguna (primer spec del proyecto)
 - **Fecha:** 2026-07-24
 - **Objetivo:** Implementar un MVP jugable de Arkanoid de un solo nivel, con controles de teclado y mouse, 3 vidas, sistema de puntos y sonido, usando HTML/CSS/JS vanilla sin dependencias.
@@ -122,21 +122,21 @@ const game = {
 
 ## Acceptance criteria
 
-- [ ] Al abrir `index.html` en el navegador, se muestra la pantalla inicial con el título del juego y una opción de "Iniciar".
-- [ ] Al iniciar, se renderiza el nivel completo: 8 columnas x 6 filas de bloques con colores distintos por fila, la paleta y la bola en sus posiciones iniciales.
-- [ ] La paleta se mueve con las flechas del teclado (o A/D) dentro de los límites del canvas.
-- [ ] La paleta se mueve siguiendo la posición del mouse dentro del canvas.
-- [ ] La bola rebota correctamente (tipo espejo) contra las paredes superior, izquierda y derecha del canvas.
-- [ ] La bola rebota correctamente contra la paleta cuando la golpea.
-- [ ] Al golpear un bloque, el bloque reproduce la animación de explosión (`EXPLOSION_FRAMES`) y luego desaparece.
-- [ ] Cada bloque destruido suma 10 puntos al score, visible en pantalla en todo momento durante `PLAYING`.
-- [ ] Se reproduce `ball-bounce.mp3` en cada rebote de la bola contra paredes/paleta.
-- [ ] Se reproduce `break-sound.mp3` cada vez que se destruye un bloque.
-- [ ] Cuando la bola cae debajo de la paleta, se resta una vida y la bola/paleta se reposicionan para continuar jugando (mientras queden vidas).
-- [ ] Al llegar a 0 vidas, se muestra la pantalla de "Game Over" con el score final y una opción de reiniciar.
-- [ ] Al destruir los 48 bloques del nivel, se muestra la pantalla de "¡Ganaste!" con el score final y una opción de reiniciar.
-- [ ] La opción de reiniciar (desde "Game Over" o "¡Ganaste!") reinicia score, vidas, bloques, paleta y bola, y vuelve a un estado jugable inmediatamente.
-- [ ] El juego funciona abriendo `index.html` directamente en el navegador, sin dependencias externas ni paso de build.
+- [x] Al abrir `index.html` en el navegador, se muestra la pantalla inicial con el título del juego y una opción de "Iniciar".
+- [x] Al iniciar, se renderiza el nivel completo: 8 columnas x 6 filas de bloques con colores distintos por fila, la paleta y la bola en sus posiciones iniciales.
+- [x] La paleta se mueve con las flechas del teclado (o A/D) dentro de los límites del canvas.
+- [x] La paleta se mueve siguiendo la posición del mouse dentro del canvas.
+- [x] La bola rebota correctamente (tipo espejo) contra las paredes superior, izquierda y derecha del canvas.
+- [x] La bola rebota correctamente contra la paleta cuando la golpea.
+- [x] Al golpear un bloque, el bloque reproduce la animación de explosión (`EXPLOSION_FRAMES`) y luego desaparece.
+- [x] Cada bloque destruido suma 10 puntos al score, visible en pantalla en todo momento durante `PLAYING`.
+- [x] Se reproduce `ball-bounce.mp3` en cada rebote de la bola contra paredes/paleta.
+- [x] Se reproduce `break-sound.mp3` cada vez que se destruye un bloque.
+- [x] Cuando la bola cae debajo de la paleta, se resta una vida y la bola/paleta se reposicionan para continuar jugando (mientras queden vidas).
+- [x] Al llegar a 0 vidas, se muestra la pantalla de "Game Over" con el score final y una opción de reiniciar.
+- [x] Al destruir los 48 bloques del nivel, se muestra la pantalla de "¡Ganaste!" con el score final y una opción de reiniciar.
+- [x] La opción de reiniciar (desde "Game Over" o "¡Ganaste!") reinicia score, vidas, bloques, paleta y bola, y vuelve a un estado jugable inmediatamente.
+- [x] El juego funciona abriendo `index.html` directamente en el navegador, sin dependencias externas ni paso de build.
 
 ## Decisiones tomadas y descartadas
 
