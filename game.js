@@ -104,6 +104,66 @@ function drawPlayingScreen() {
   drawBall();
 }
 
+const ballBounceSound = new Audio( 'assets/sounds/ball-bounce.mp3' );
+
+function playBallBounceSound() {
+  ballBounceSound.cloneNode().play();
+}
+
+function repositionBallAndPaddle() {
+  game.paddle = createPaddle();
+  game.ball = createBall( game.paddle );
+}
+
+function loseLife() {
+  game.lives -= 1;
+  if ( game.lives <= 0 ) {
+    game.status = 'GAME_OVER';
+    return;
+  }
+  repositionBallAndPaddle();
+}
+
+function updateBall() {
+  const ball = game.ball;
+
+  ball.x += ball.dx;
+  ball.y += ball.dy;
+
+  if ( ball.x <= 0 ) {
+    ball.x = 0;
+    ball.dx = -ball.dx;
+    playBallBounceSound();
+  } else if ( ball.x + ball.size >= CONFIG.CANVAS_WIDTH ) {
+    ball.x = CONFIG.CANVAS_WIDTH - ball.size;
+    ball.dx = -ball.dx;
+    playBallBounceSound();
+  }
+
+  if ( ball.y <= 0 ) {
+    ball.y = 0;
+    ball.dy = -ball.dy;
+    playBallBounceSound();
+  }
+
+  const paddle = game.paddle;
+  const hitsPaddle = ball.dy > 0 &&
+    ball.x + ball.size >= paddle.x &&
+    ball.x <= paddle.x + paddle.width &&
+    ball.y + ball.size >= paddle.y &&
+    ball.y + ball.size <= paddle.y + paddle.height;
+
+  if ( hitsPaddle ) {
+    ball.y = paddle.y - ball.size;
+    ball.dy = -ball.dy;
+    playBallBounceSound();
+  }
+
+  if ( ball.y > CONFIG.CANVAS_HEIGHT ) {
+    loseLife();
+  }
+}
+
 function drawStartScreen() {
   ctx.fillStyle = '#000';
   ctx.fillRect( 0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT );
@@ -171,6 +231,7 @@ function updatePaddle() {
 function gameLoop() {
   if ( game.status === 'PLAYING' ) {
     updatePaddle();
+    updateBall();
   }
   render();
   requestAnimationFrame( gameLoop );
