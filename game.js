@@ -197,6 +197,8 @@ function drawHud() {
   ctx.font = '16px sans-serif';
   ctx.textAlign = 'left';
   ctx.fillText( 'Score: ' + game.score, 10, 20 );
+  ctx.textAlign = 'center';
+  ctx.fillText( 'Nivel: ' + game.level, CONFIG.CANVAS_WIDTH / 2, 20 );
   ctx.textAlign = 'right';
   ctx.fillText( 'Vidas: ' + game.lives, CONFIG.CANVAS_WIDTH - 10, 20 );
 }
