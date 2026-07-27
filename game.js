@@ -296,8 +296,10 @@ function handleBlockCollision() {
 
     if ( overlapX < overlapY ) {
       ball.dx = -ball.dx;
+      ball.x += ball.dx > 0 ? overlapX : -overlapX;
     } else {
       ball.dy = -ball.dy;
+      ball.y += ball.dy > 0 ? overlapY : -overlapY;
     }
 
     if ( block.destructible ) {
@@ -318,8 +320,12 @@ function checkWinCondition() {
     .filter( ( block ) => block.destructible )
     .every( ( block ) => block.destroyed );
 
-  if ( allDestructiblesDestroyed && game.level < CONFIG.MAX_LEVEL ) {
+  if ( !allDestructiblesDestroyed ) return;
+
+  if ( game.level < CONFIG.MAX_LEVEL ) {
     game.status = 'LEVEL_COMPLETE';
+  } else {
+    game.status = 'WON';
   }
 }
 
