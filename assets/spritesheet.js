@@ -21,6 +21,9 @@ const SPRITES = {
     magenta: { sx: 32, sy: 224, sw: 32, sh: 16 },
     hotpink: { sx: 32, sy: 256, sw: 32, sh: 16 },
     green: { sx: 32, sy: 208, sw: 32, sh: 16 },
+    wood: { sx: 32, sy: 272, sw: 32, sh: 16 },
+    brick_red: { sx: 64, sy: 272, sw: 32, sh: 16 },
+    brick_purple: { sx: 64, sy: 288, sw: 32, sh: 16 },
   }
 };
 
