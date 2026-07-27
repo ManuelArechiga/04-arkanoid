@@ -1,6 +1,6 @@
 # Spec 02 — Niveles Progresivos con Dificultad Creciente
 
-- **Estado:** Approved
+- **Estado:** Implemented
 - **Dependencias:** 01-mvp-arkanoid (requiere el MVP implementado)
 - **Fecha:** 2026-07-24
 - **Objetivo:** Implementar una progresión de 10 niveles generados automáticamente con dificultad creciente (bola más rápida y bloques indestructibles de distintos materiales), donde completar el nivel 10 gana el juego.
@@ -196,22 +196,22 @@ const game = {
 
 ## Acceptance criteria
 
-- [ ] Al iniciar una partida, el nivel 1 no tiene bloques indestructibles — solo los 48 bloques de color habituales.
-- [ ] A partir del nivel 2, aparecen bloques indestructibles en filas extra debajo de la cuadrícula de 6x8, con el material y la cantidad correspondientes a la tabla `LEVEL_MATERIALS`/`INDESTRUCTIBLE_COUNTS` de cada nivel.
-- [ ] En cada fila extra de indestructibles siempre queda al menos 1 columna sin bloque, garantizando un camino libre hacia los bloques rompibles superiores.
-- [ ] Los bloques indestructibles rebotan la bola (reproduciendo `ball-bounce.mp3`) pero nunca se destruyen, no otorgan puntos y no reproducen `break-sound.mp3` ni animación de explosión.
-- [ ] La velocidad de la bola aumenta en cada nivel siguiendo `BALL_SPEED = min(4 + (nivel-1)*0.4, 7)`, siendo perceptiblemente más rápida en niveles altos que en el nivel 1.
-- [ ] Al destruir todos los bloques rompibles de un nivel entre 1 y 9, se muestra la pantalla "Nivel completado" con el score acumulado y una opción de continuar.
-- [ ] Al continuar desde "Nivel completado", se carga el siguiente nivel: vidas restauradas a 3, score conservado, bloques regenerados con la dificultad del nuevo nivel.
-- [ ] Al destruir todos los bloques rompibles del nivel 10, se muestra la pantalla "¡Ganaste!" con el score acumulado total de todos los niveles.
-- [ ] El HUD muestra el nivel actual (junto a score y vidas) en todo momento durante `PLAYING`.
-- [ ] Al llegar a 0 vidas en cualquier nivel, se muestra "Game Over" con el score acumulado hasta ese punto.
-- [ ] Reiniciar desde "Game Over" vuelve siempre al nivel 1, con score en 0 y vidas completas.
-- [ ] El juego sigue funcionando abriendo `index.html` directamente en el navegador, sin dependencias externas ni paso de build.
-- [ ] El rebote contra la paleta preserva el ángulo espejo puro al golpear el centro exacto, y lo ajusta hasta ±15° hacia las orillas (clamp de seguridad en 30°-150°); el rebote contra paredes y bloques sigue siendo espejo puro.
-- [ ] La columna libre de las filas extra de indestructibles es la misma en todas las filas de un nivel, formando un corredor vertical continuo sin bolsillos cerrados.
-- [ ] Si la bola pasa `CONFIG.STUCK_TIMEOUT_MS` sin destruir un bloque ni tocar la paleta, su dirección se ajusta automáticamente (empujón aleatorio) para evitar un atasco permanente.
-- [ ] Una simulación de juego prolongada (paleta persiguiendo la bola) no deja bloques rompibles atrapados en una trayectoria cíclica sin resolución, incluso si el ciclo nunca involucra a la paleta.
+- [x] Al iniciar una partida, el nivel 1 no tiene bloques indestructibles — solo los 48 bloques de color habituales.
+- [x] A partir del nivel 2, aparecen bloques indestructibles en filas extra debajo de la cuadrícula de 6x8, con el material y la cantidad correspondientes a la tabla `LEVEL_MATERIALS`/`INDESTRUCTIBLE_COUNTS` de cada nivel.
+- [x] En cada fila extra de indestructibles siempre queda al menos 1 columna sin bloque, garantizando un camino libre hacia los bloques rompibles superiores.
+- [x] Los bloques indestructibles rebotan la bola (reproduciendo `ball-bounce.mp3`) pero nunca se destruyen, no otorgan puntos y no reproducen `break-sound.mp3` ni animación de explosión.
+- [x] La velocidad de la bola aumenta en cada nivel siguiendo `BALL_SPEED = min(4 + (nivel-1)*0.4, 7)`, siendo perceptiblemente más rápida en niveles altos que en el nivel 1.
+- [x] Al destruir todos los bloques rompibles de un nivel entre 1 y 9, se muestra la pantalla "Nivel completado" con el score acumulado y una opción de continuar.
+- [x] Al continuar desde "Nivel completado", se carga el siguiente nivel: vidas restauradas a 3, score conservado, bloques regenerados con la dificultad del nuevo nivel.
+- [x] Al destruir todos los bloques rompibles del nivel 10, se muestra la pantalla "¡Ganaste!" con el score acumulado total de todos los niveles.
+- [x] El HUD muestra el nivel actual (junto a score y vidas) en todo momento durante `PLAYING`.
+- [x] Al llegar a 0 vidas en cualquier nivel, se muestra "Game Over" con el score acumulado hasta ese punto.
+- [x] Reiniciar desde "Game Over" vuelve siempre al nivel 1, con score en 0 y vidas completas.
+- [x] El juego sigue funcionando abriendo `index.html` directamente en el navegador, sin dependencias externas ni paso de build.
+- [x] El rebote contra la paleta preserva el ángulo espejo puro al golpear el centro exacto, y lo ajusta hasta ±15° hacia las orillas (clamp de seguridad en 30°-150°); el rebote contra paredes y bloques sigue siendo espejo puro.
+- [x] La columna libre de las filas extra de indestructibles es la misma en todas las filas de un nivel, formando un corredor vertical continuo sin bolsillos cerrados.
+- [x] Si la bola pasa `CONFIG.STUCK_TIMEOUT_MS` sin destruir un bloque ni tocar la paleta, su dirección se ajusta automáticamente (empujón aleatorio) para evitar un atasco permanente.
+- [x] Una simulación de juego prolongada (paleta persiguiendo la bola) no deja bloques rompibles atrapados en una trayectoria cíclica sin resolución, incluso si el ciclo nunca involucra a la paleta.
 
 ## Decisiones tomadas y descartadas
 
