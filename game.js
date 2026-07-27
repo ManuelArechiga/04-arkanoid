@@ -22,6 +22,13 @@ const CONFIG = {
   BALL_SPEED_MAX: 7,               // tope, sujeto a ajuste tras prueba manual
   EXTRA_ROW_MAX_PER_ROW: 7,        // máximo de indestructibles por fila extra (deja ≥1 columna libre)
 
+  PADDLE_BOUNCE_MIN_ANGLE: 30,     // clamp de seguridad, evita trayectorias demasiado horizontales
+  PADDLE_BOUNCE_MAX_ANGLE: 150,    // clamp de seguridad, evita trayectorias demasiado horizontales
+  PADDLE_BOUNCE_MAX_OFFSET_DEGREES: 15, // ajuste máx. respecto al ángulo espejo, en la orilla extrema
+
+  STUCK_TIMEOUT_MS: 8000,          // sin romper bloque ni tocar paleta en este tiempo → red de seguridad
+  STUCK_NUDGE_MAX_DEGREES: 20,     // rango del empujón aleatorio aplicado por la red de seguridad
+
   INDESTRUCTIBLE_COUNTS: [ 0, 2, 4, 4, 7, 7, 10, 10, 12, 14 ], // índice 0 = nivel 1
 
   // Materiales activos (utilizables) por nivel, según el patrón alterno confirmado
@@ -47,6 +54,7 @@ const game = {
   blocks: [],          // array de Block, generado al iniciar/reiniciar
   paddle: null,        // Paddle
   ball: null,          // Ball
+  lastProgressTime: null, // timestamp (ms) del último bloque destruido o rebote de paleta
 };
 
 const canvas = document.getElementById( 'gameCanvas' );
@@ -80,9 +88,8 @@ function createBlocks() {
   return blocks;
 }
 
-function pickRandomColumns( count, totalCols ) {
-  const columns = [];
-  for ( let col = 0; col < totalCols; col++ ) columns.push( col );
+function pickRandomColumns( count, eligibleColumns ) {
+  const columns = eligibleColumns.slice();
 
   for ( let i = columns.length - 1; i > 0; i-- ) {
     const j = Math.floor( Math.random() * ( i + 1 ) );
@@ -99,12 +106,21 @@ function createIndestructibleBlocks( level ) {
   if ( count === 0 ) return blocks;
 
   const marginX = blockGridMarginX();
+
+  // Una sola columna libre por nivel, reutilizada en todas las filas extra, para garantizar
+  // un corredor vertical continuo hacia los bloques rompibles (evita bolsillos cerrados).
+  const freeColumn = Math.floor( Math.random() * CONFIG.BLOCK_COLS );
+  const eligibleColumns = [];
+  for ( let col = 0; col < CONFIG.BLOCK_COLS; col++ ) {
+    if ( col !== freeColumn ) eligibleColumns.push( col );
+  }
+
   let remaining = count;
   let rowIndex = 0;
 
   while ( remaining > 0 ) {
     const rowCount = Math.min( remaining, CONFIG.EXTRA_ROW_MAX_PER_ROW );
-    const columns = pickRandomColumns( rowCount, CONFIG.BLOCK_COLS );
+    const columns = pickRandomColumns( rowCount, eligibleColumns );
 
     for ( const col of columns ) {
       blocks.push( {
@@ -156,6 +172,7 @@ function setupLevel() {
   game.blocks = createBlocks().concat( createIndestructibleBlocks( game.level ) );
   game.paddle = createPaddle();
   game.ball = createBall( game.paddle );
+  game.lastProgressTime = Date.now();
 }
 
 function initGame() {
@@ -238,6 +255,29 @@ function loseLife() {
   repositionBallAndPaddle();
 }
 
+function applyPaddleBounce( ball, paddle ) {
+  const ballCenterX = ball.x + ball.size / 2;
+  const paddleCenterX = paddle.x + paddle.width / 2;
+  const offset = clamp( ( ballCenterX - paddleCenterX ) / ( paddle.width / 2 ), -1, 1 );
+
+  // Ángulo base: rebote espejo puro (dy se invierte, dx conserva su signo/magnitud).
+  // ball.dy > 0 aquí (la bola venía bajando), así que este atan2 siempre cae en (0°, 180°).
+  const mirrorAngleDeg = Math.atan2( ball.dy, ball.dx ) * 180 / Math.PI;
+
+  // El punto de impacto ajusta ese ángulo base: 0° en el centro exacto, hasta
+  // ±CONFIG.PADDLE_BOUNCE_MAX_OFFSET_DEGREES en las orillas (derecha resta, izquierda suma).
+  const angleDeg = clamp(
+    mirrorAngleDeg - offset * CONFIG.PADDLE_BOUNCE_MAX_OFFSET_DEGREES,
+    CONFIG.PADDLE_BOUNCE_MIN_ANGLE,
+    CONFIG.PADDLE_BOUNCE_MAX_ANGLE
+  );
+  const angleRad = angleDeg * Math.PI / 180;
+
+  const speed = ballSpeedForLevel( game.level );
+  ball.dx = speed * Math.cos( angleRad );
+  ball.dy = -speed * Math.sin( angleRad );
+}
+
 function updateBall() {
   const ball = game.ball;
 
@@ -269,15 +309,32 @@ function updateBall() {
 
   if ( hitsPaddle ) {
     ball.y = paddle.y - ball.size;
-    ball.dy = -ball.dy;
+    applyPaddleBounce( ball, paddle );
     playBallBounceSound();
+    game.lastProgressTime = Date.now();
   }
 
   handleBlockCollision();
+  checkStuckBall();
 
   if ( ball.y > CONFIG.CANVAS_HEIGHT ) {
     loseLife();
   }
+}
+
+function checkStuckBall() {
+  const elapsed = Date.now() - game.lastProgressTime;
+  if ( elapsed <= CONFIG.STUCK_TIMEOUT_MS ) return;
+
+  const ball = game.ball;
+  const currentAngle = Math.atan2( -ball.dy, ball.dx );
+  const nudge = ( Math.random() * 2 - 1 ) * ( CONFIG.STUCK_NUDGE_MAX_DEGREES * Math.PI / 180 );
+  const newAngle = currentAngle + nudge;
+  const speed = Math.hypot( ball.dx, ball.dy );
+
+  ball.dx = speed * Math.cos( newAngle );
+  ball.dy = -speed * Math.sin( newAngle );
+  game.lastProgressTime = Date.now();
 }
 
 function handleBlockCollision() {
@@ -309,6 +366,7 @@ function handleBlockCollision() {
       block.explosionStartTime = Date.now();
       game.score += CONFIG.POINTS_PER_BLOCK;
       playBreakSound();
+      game.lastProgressTime = Date.now();
     } else {
       playBallBounceSound();
     }
